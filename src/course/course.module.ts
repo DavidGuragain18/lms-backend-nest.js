@@ -10,6 +10,9 @@ import { Course, courseSchema } from 'src/schema/course.schema';
     imports: [
     MongooseModule.forFeature([{ name: Course.name, schema: courseSchema }]),
   ],
+  exports:[
+    MongooseModule
+  ]
 })
 export class CourseModule {
     
