@@ -8,7 +8,8 @@ import { UpdateCourseDto } from './update-course.dto';
 @Injectable()
 export class CourseService {
   constructor(
-    @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
+@InjectModel(Course.name) private courseModel: Model<CourseDocument>,
+    //   @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
