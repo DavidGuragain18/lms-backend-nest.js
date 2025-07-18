@@ -10,6 +10,7 @@ import { CourseLessonService } from './course_lesson/course_lesson.service';
 import { CourseLessonModule } from './course_lesson/course_lesson.module';
 import { CourseLessonController } from './course_lesson/course_lesson.controller';
 import { LessonTestModule } from './lesson_test/lesson_test.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LessonTestModule } from './lesson_test/lesson_test.module';
    CourseModule,
    CourseLessonModule,
    LessonTestModule,
+   UploadModule,
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],

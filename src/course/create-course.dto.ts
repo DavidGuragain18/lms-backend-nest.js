@@ -2,6 +2,7 @@ import { IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString, ValidateNested } 
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { CourseLesson } from 'src/schema/course_lesson.schema'; // Adjust path as needed
+import { MulterField } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 
 // Optional: Define a DTO for CourseLesson if needed for API input
 export class CourseLessonDto {
@@ -43,35 +44,13 @@ export class CreateCourseDto {
   description: string;
 
   @ApiProperty({
-    description: 'URL or path to the course cover image',
-    example: 'https://example.com/images/typescript-course.jpg',
+    type: 'string',
+    format: 'binary',
+    description: 'Course cover image file',
     required: false,
   })
-  @IsString()
   @IsOptional()
-  coverImage?: string;
-
-  @ApiProperty({
-    description: 'List of lessons in the course',
-    type: [CourseLessonDto],
-    example: [
-      { title: 'Introduction to TypeScript Basics', content: 'Learn the basics of TypeScript syntax and types.' },
-      { title: 'Advanced TypeScript Features', content: 'Explore advanced types and interfaces.' },
-    ],
-    required: false,
-  })
   
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => CourseLessonDto)
-  lessons?: CourseLessonDto[];
+  coverImage?: MulterField;
 
-  @ApiProperty({
-    description: 'The ID of the user who authored the course (MongoDB ObjectId)',
-    example: '507f1f77bcf86cd799439011',
-  })
-  @IsMongoId()
-  @IsNotEmpty()
-  author: string; // MongoDB ObjectId as string
 }

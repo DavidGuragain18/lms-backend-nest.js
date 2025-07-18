@@ -1,22 +1,38 @@
-import { Body, Controller, Post, Get, Param, Put, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Put, Delete, HttpCode, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { CourseService } from './course.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CreateCourseDto } from './create-course.dto';
 import { UpdateCourseDto } from './update-course.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/config/multer.config';
 
 @ApiTags('Courses')
 @Controller('course')
 export class CourseController {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(private readonly courseService: CourseService) { }
 
-  @Post()
+   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new course' })
-  @ApiBody({ type: CreateCourseDto })
-  @ApiResponse({ status: 201, description: 'Course successfully created' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() createCourseDto: CreateCourseDto) {
-    return this.courseService.create(createCourseDto);
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Create course with cover image',
+    type: CreateCourseDto,
+  })
+  @UseInterceptors(FileInterceptor('coverImage', multerOptions))
+  @ApiResponse({ 
+    status: HttpStatus.CREATED, 
+    description: 'Course successfully created' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Bad request - invalid data or file type' 
+  })
+  async create(
+    @Body() createCourseDto: CreateCourseDto,
+    @UploadedFile() coverImage?: Express.Multer.File,
+  ) {
+    return this.courseService.create(createCourseDto, coverImage);
   }
 
   @Get()

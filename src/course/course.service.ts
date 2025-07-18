@@ -4,16 +4,40 @@ import { Model } from 'mongoose';
 import { Course, CourseDocument } from '../schema/course.schema';
 import { CreateCourseDto } from './create-course.dto';
 import { UpdateCourseDto } from './update-course.dto';
+import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 
 @Injectable()
 export class CourseService {
   constructor(
-@InjectModel(Course.name) private courseModel: Model<CourseDocument>,
+    @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     //   @InjectModel(User.name) private userModel: Model<User>,
-  ) {}
+  ) {
+    // Ensure upload directory exists
+    const uploadDir = join(__dirname, '../../uploads/course-covers');
+    if (!existsSync(uploadDir)) {
+      mkdirSync(uploadDir, { recursive: true });
+    }
+  }
 
-  async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const createdCourse = new this.courseModel(createCourseDto);
+  async create(createCourseDto: CreateCourseDto, coverImage?: Express.Multer.File,): Promise<Course> {
+
+
+
+
+    let coverImageUrl: string | undefined;
+
+    if (coverImage) {
+      // In production, you would upload to Cloudinary/S3 here
+      coverImageUrl = `/course-covers/${coverImage.filename}`;
+    }
+
+
+    const createdCourse = new this.courseModel({
+      ...createCourseDto,
+      image: coverImageUrl,
+    });
+
     return createdCourse.save();
   }
 
@@ -33,7 +57,7 @@ export class CourseService {
     const existingCourse = await this.courseModel
       .findByIdAndUpdate(id, updateCourseDto, { new: true })
       .exec();
-    
+
     if (!existingCourse) {
       throw new NotFoundException('Course not found');
     }
