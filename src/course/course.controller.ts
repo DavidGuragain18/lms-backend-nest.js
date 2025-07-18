@@ -11,7 +11,7 @@ import { multerOptions } from 'src/config/multer.config';
 export class CourseController {
   constructor(private readonly courseService: CourseService) { }
 
-   @Post()
+  @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new course' })
   @ApiConsumes('multipart/form-data')
@@ -20,13 +20,13 @@ export class CourseController {
     type: CreateCourseDto,
   })
   @UseInterceptors(FileInterceptor('coverImage', multerOptions))
-  @ApiResponse({ 
-    status: HttpStatus.CREATED, 
-    description: 'Course successfully created' 
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Course successfully created'
   })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
-    description: 'Bad request - invalid data or file type' 
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - invalid data or file type'
   })
   async create(
     @Body() createCourseDto: CreateCourseDto,
@@ -52,12 +52,26 @@ export class CourseController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a course' })
-  @ApiBody({ type: UpdateCourseDto })
-  @ApiResponse({ status: 200, description: 'Course updated' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('coverImage', multerOptions))
+  @ApiBody({
+    description: 'Update course with optional image',
+    type: UpdateCourseDto
+  })
+  @ApiResponse({ status: 200, description: 'Course updated successfully' })
   @ApiResponse({ status: 404, description: 'Course not found' })
-  async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    return this.courseService.update(id, updateCourseDto);
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - invalid data or file type',
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateCourseDto: UpdateCourseDto,
+    @UploadedFile() coverImage?: Express.Multer.File,
+  ) {
+    return this.courseService.update(id, updateCourseDto, coverImage);
   }
+
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -4,26 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CourseLesson } from 'src/schema/course_lesson.schema'; // Adjust path as needed
 import { MulterField } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 
-// Optional: Define a DTO for CourseLesson if needed for API input
-export class CourseLessonDto {
-  @ApiProperty({
-    description: 'The title of the lesson',
-    example: 'Introduction to TypeScript Basics',
-  })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty({
-    description: 'The content or description of the lesson',
-    example: 'Learn the basics of TypeScript syntax and types.',
-  })
-  @IsString()
-  @IsNotEmpty()
-  content: string;
-
-  // Add other properties as defined in your CourseLesson schema
-}
 
 // Main DTO for creating a course
 export class CreateCourseDto {

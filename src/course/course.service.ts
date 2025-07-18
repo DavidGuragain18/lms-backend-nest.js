@@ -22,9 +22,6 @@ export class CourseService {
 
   async create(createCourseDto: CreateCourseDto, coverImage?: Express.Multer.File,): Promise<Course> {
 
-
-
-
     let coverImageUrl: string | undefined;
 
     if (coverImage) {
@@ -52,15 +49,30 @@ export class CourseService {
     }
     return course;
   }
+  async update(
+    id: string,
+    updateCourseDto: UpdateCourseDto,
+    coverImage?: Express.Multer.File
+  ): Promise<Course> {
+    let coverImageUrl: string | undefined;
 
-  async update(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
+    if (coverImage) {
+      coverImageUrl = `/course-covers/${coverImage.filename}`;
+    }
+
+    const updatePayload = {
+      ...updateCourseDto,
+      ...(coverImageUrl && { image: coverImageUrl }), // only adds `image` if defined
+    };
+
     const existingCourse = await this.courseModel
-      .findByIdAndUpdate(id, updateCourseDto, { new: true })
+      .findByIdAndUpdate(id, updatePayload, { new: true })
       .exec();
 
     if (!existingCourse) {
       throw new NotFoundException('Course not found');
     }
+
     return existingCourse;
   }
 
