@@ -67,11 +67,11 @@ export class AuthenticationService {
     }
 
     // 3. Generate JWT token
-    // const payload = { sub: user._id, email: user.email, role: user.role };
-    // const accessToken = this.jwtService.sign(payload);
+    const payload = { sub: user._id, email: user.email, role: user.role };
+    const accessToken = this.jwtService.sign(payload, {secret: "secret"});
 
     // 4. Return user + token (without password)
-    // const { password: _, ...userData } = user.toObject();
-    // return { user: userData, accessToken };
+    const { password: _, ...userData } = user.toObject();
+    return { user: userData, accessToken };
   }
 }
