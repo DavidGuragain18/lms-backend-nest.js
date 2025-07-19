@@ -1,8 +1,10 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';  // Correct relative path
-import { ApiTags, ApiResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { RegisterDto } from './register.dto';
 import { LoginDto } from './login.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/config/multer.config';
 
 @ApiTags('Authentication')
 @Controller('authentication')
@@ -12,7 +14,9 @@ export class AuthenticationController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user' })
+  @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterDto })
+  @UseInterceptors(FileInterceptor("image", multerOptions))
   @ApiResponse({ 
     status: 201, 
     description: 'User successfully registered' 
@@ -21,8 +25,8 @@ export class AuthenticationController {
     status: 409, 
     description: 'Email already in use' 
   })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() registerDto: RegisterDto, @UploadedFile() image?: Express.Multer.File) {
+    return this.authService.register({...registerDto, file: image}, );
   }
 
   @Post('login')

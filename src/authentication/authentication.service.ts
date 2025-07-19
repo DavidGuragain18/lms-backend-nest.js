@@ -17,22 +17,27 @@ export class AuthenticationService {
     email,
     password,
     name,
-    image,
+    file
   }: {
     email: string;
     password: string;
     name: string;
-    image?: string;
+    file?: Express.Multer.File
   }) {
     // 1. Check if user exists
     const existingUser = await this.userModel.findOne({ email });
-    console.log(existingUser);    
+      
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
 
     // 2. Hash password (async recommended)
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    let image :string|null = null;
+    if(file){
+      image = `/uploads/${file.filename}`
+    }
 
     // 3. Create user
     const newUser = await this.userModel.create({

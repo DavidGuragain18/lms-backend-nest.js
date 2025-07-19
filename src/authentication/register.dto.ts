@@ -29,11 +29,12 @@ export class RegisterDto {
   name: string;
 
   @ApiProperty({
-    example: 'https://example.com/avatar.jpg',
     description: 'URL to user profile image',
-    required: false
+    required: false,
+    type: 'string',
+    format: 'binary'
   })
   @IsString()
   @IsOptional()
-  image?: string;
+  image?: any;
 }
