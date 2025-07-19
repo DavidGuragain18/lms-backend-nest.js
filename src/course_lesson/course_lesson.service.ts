@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpCode, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from 'src/schema/course.schema';
 import { CourseLesson, CourseLessonDocument } from 'src/schema/course_lesson.schema';
 import { CreateCourseLessonDto } from './create-course-lesson.dto';
@@ -9,31 +9,54 @@ import { UpdateCourseLessonDto } from './update-course-lesson.dto';
 @Injectable()
 export class CourseLessonService {
   constructor(
-    @InjectModel(CourseLesson.name) 
+    @InjectModel(CourseLesson.name)
     private readonly lessonModel: Model<CourseLessonDocument>,
-    @InjectModel(Course.name) 
+    @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
-  ) {}
+  ) { }
 
-  async create(createCourseLessonDto: CreateCourseLessonDto): Promise<CourseLesson> {
-    // Check if course exists
-    const course = await this.courseModel.findById(createCourseLessonDto.courseId);
+  async create(
+    createCourseLessonDto: CreateCourseLessonDto,
+    courseId: string,
+    pdfUrl: Express.Multer.File,
+  ): Promise<CourseLesson> {
+    console.log(courseId);
+
+    let pdf: string | null = null;
+    pdf = "/course-covers/" + pdfUrl.path;
+    console.log("pdf url", pdf);
+
+
+
+    // Hardcoded ID for testing
+    const hardcodedCourseId = new Types.ObjectId(courseId);
+
+
+    // 1. Verify the course exists using hardcoded ID
+    const course = await this.courseModel.findById(hardcodedCourseId);
+
     if (!course) {
-      throw new NotFoundException('Course not found');
+      throw new NotFoundException('Course not found with hardcoded ID');
     }
 
-    // Create the lesson
-    const lesson = new this.lessonModel(createCourseLessonDto);
-    const savedLesson = await lesson.save();
+    // 2. Create lesson data
+    const lessonData = {
+      ...createCourseLessonDto,
+      course: hardcodedCourseId, // Using the hardcoded ObjectId
+      pdfUrl: pdf
+    };
+    console.log('Lesson data:', lessonData);
 
-    // Add lesson to course's lessons array
-    await this.courseModel.findByIdAndUpdate(
-      createCourseLessonDto.courseId,
-      { $push: { lessons: savedLesson._id } },
-      { new: true },
-    );
-
-    return savedLesson;
+    // 3. Create and save lesson
+    try {
+      const lesson = new this.lessonModel(lessonData);
+      const savedLesson = await lesson.save();
+      console.log('Saved lesson:', savedLesson);
+      return savedLesson;
+    } catch (error) {
+      console.error('Save error:', error);
+      throw error;
+    }
   }
 
   async findAllByCourse(courseId: string): Promise<CourseLesson[]> {
@@ -52,17 +75,31 @@ export class CourseLessonService {
     return lesson;
   }
 
-  async update(id: string, updateCourseLessonDto: UpdateCourseLessonDto): Promise<CourseLesson> {
-    const lesson = await this.lessonModel.findByIdAndUpdate(
-      id,
-      updateCourseLessonDto,
-      { new: true },
-    );
+
+  async update(
+    lessonId: string,
+    updateCourseLessonDto: UpdateCourseLessonDto,
+    pdfUrl?: Express.Multer.File
+  ): Promise<CourseLesson> {
+    // Determine PDF path if a new file is uploaded
+    let updatedFields: any = { ...updateCourseLessonDto };
+
+    if (pdfUrl) {
+      updatedFields.pdfUrl = "/course-covers/" + pdfUrl.filename;
+    }
+
+    // Hardcoded ID for testing
+    const hardcodedLessonId = new Types.ObjectId(lessonId);
+
+    const lesson = await this.lessonModel.findByIdAndUpdate(hardcodedLessonId, updatedFields, { new: true } );
+
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
+
     return lesson;
   }
+
 
   async remove(id: string): Promise<{ deleted: boolean; message?: string }> {
     // Find the lesson to get the course reference

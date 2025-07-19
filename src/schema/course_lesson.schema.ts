@@ -1,10 +1,11 @@
-import { Prop, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Types } from "mongoose";
 import { Course } from "./course.schema";
 import { CourseTest, courseTestSchema } from "./course.test.schema";
 
 export type CourseLessonDocument = HydratedDocument<CourseLesson>;
 
+@Schema()
 export class CourseLesson {
   @Prop({ required: true })
   title: string;
