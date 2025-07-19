@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Apply global pipes
   app.useGlobalPipes(new ValidationPipe());
 
@@ -14,7 +14,18 @@ async function bootstrap() {
     .setTitle('LMS API')
     .setDescription('Learning Management System API')
     .setVersion('1.0')
-    .addBearerAuth() // For JWT authentication
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        in: 'header',
+        description: 'Enter your Bearer token (e.g., Bearer <JWT>)',
+      },
+      'bearer', // Name of the security scheme
+    )
+    .addSecurityRequirements('bearer') // Ensure all protected endpoints require the token
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

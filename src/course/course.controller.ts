@@ -1,10 +1,11 @@
-import { Body, Controller, Post, Get, Param, Put, Delete, HttpCode, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Put, Delete, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CreateCourseDto } from './create-course.dto';
 import { UpdateCourseDto } from './update-course.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/multer.config';
+import { Request } from 'express';
 
 @ApiTags('Courses')
 @Controller('course')
@@ -30,9 +31,10 @@ export class CourseController {
   })
   async create(
     @Body() createCourseDto: CreateCourseDto,
+    // @Req() request: Request,
     @UploadedFile() coverImage?: Express.Multer.File,
   ) {
-    return this.courseService.create(createCourseDto, coverImage);
+    return this.courseService.create(createCourseDto ,coverImage);
   }
 
   @Get()

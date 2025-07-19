@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Course, CourseDocument } from '../schema/course.schema';
@@ -6,11 +6,17 @@ import { CreateCourseDto } from './create-course.dto';
 import { UpdateCourseDto } from './update-course.dto';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class CourseService {
   constructor(
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
+    @Inject(REQUEST) private request: Request,
+    private jwtService: JwtService
+
     //   @InjectModel(User.name) private userModel: Model<User>,
   ) {
     // Ensure upload directory exists
@@ -20,7 +26,7 @@ export class CourseService {
     }
   }
 
-  async create(createCourseDto: CreateCourseDto, coverImage?: Express.Multer.File,): Promise<Course> {
+  async create(createCourseDto: CreateCourseDto, coverImage?: Express.Multer.File, ): Promise<Course> {
 
     let coverImageUrl: string | undefined;
 
@@ -28,11 +34,11 @@ export class CourseService {
       // In production, you would upload to Cloudinary/S3 here
       coverImageUrl = `/course-covers/${coverImage.filename}`;
     }
-
-
+    
     const createdCourse = new this.courseModel({
       ...createCourseDto,
       image: coverImageUrl,
+      teacher: this.request.user.sub
     });
 
     return createdCourse.save();

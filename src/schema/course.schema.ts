@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { User } from "./user.schema";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import { CourseLesson, courseLessonSchema } from "./course_lesson.schema";
 
 export type CourseDocument = HydratedDocument<Course>
@@ -19,6 +19,9 @@ export class Course {
     // Array of embedded lesson documents
     @Prop({ type: [courseLessonSchema] })
     lessons: CourseLesson[];
+
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    teacher: User
 
 }
 
