@@ -1,12 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { 
-  IsArray, 
-  IsNumber, 
-  IsString, 
-  Min, 
-  MinLength, 
-  IsNotEmpty, 
+import { Transform } from "class-transformer";
+import {
+  IsArray,
+  IsNumber,
+  IsString,
+  Min,
+  MinLength,
+  IsNotEmpty,
   ArrayMinSize,
+  IsOptional,
+  IsNumberString,
 } from "class-validator";
 
 export class CreateCourseLessonDto {
@@ -28,22 +31,23 @@ export class CreateCourseLessonDto {
     required: true, // Changed to true
     description: 'PDF file for the lesson (required)'
   })
-  @IsNotEmpty({ message: 'PDF file is required' })
+  @IsOptional({ message: 'PDF file is required' })
   readonly pdfUrl: any; // Removed the ? to make it required
 
   @ApiProperty({ required: true, example: 10 })
   @IsNumber()
   @Min(1, { message: 'Reading duration must be at least 1 minute' })
+  @Transform(({ value }) => (typeof value === 'string' ? parseInt(value, 10) : value))
   readonly readingDuration: number;
 
-  @ApiProperty({ 
-    required: true, 
+  @ApiProperty({
+    required: false,
     example: ['TypeScript', 'Programming'],
     type: [String],
-    description: 'Array of keywords for the lesson' 
+    description: 'Array of keywords for the lesson'
   })
   @IsArray()
-  @ArrayMinSize(1, { message: 'At least one keyword is required' })
+  @IsOptional()
   @IsString({ each: true, message: 'Each keyword must be a string' })
   readonly keywords: string[];
 }

@@ -21,7 +21,6 @@ export class UpdateCourseLessonDto {
   @IsOptional()
   @IsString()
   @MinLength(3, { message: 'Title must be at least 3 characters long' })
-  @ValidateIf(o => o.title !== undefined)
   readonly title?: string;
 
   @ApiProperty({ 
@@ -32,7 +31,6 @@ export class UpdateCourseLessonDto {
   @IsOptional()
   @IsString()
   @MinLength(10, { message: 'Description must be at least 10 characters long' })
-  @ValidateIf(o => o.description !== undefined)
   readonly description?: string;
 
   @ApiProperty({
@@ -55,7 +53,6 @@ export class UpdateCourseLessonDto {
   @IsNumber()
   @IsInt()
   @Min(1, { message: 'Pages must be at least 1' })
-  @ValidateIf(o => o.pages !== undefined)
   readonly pages?: number;
 
   @ApiProperty({ 
@@ -68,7 +65,6 @@ export class UpdateCourseLessonDto {
   @IsOptional()
   @IsNumber()
   @Min(1, { message: 'Reading duration must be at least 1 minute' })
-  @ValidateIf(o => o.readingDuration !== undefined)
   readonly readingDuration?: number;
 
   @ApiProperty({ 
@@ -81,6 +77,5 @@ export class UpdateCourseLessonDto {
   @IsArray()
   @ArrayMinSize(1, { message: 'Keywords array cannot be empty if provided' })
   @IsString({ each: true, message: 'Each keyword must be a string' })
-  @ValidateIf(o => o.keywords !== undefined)
   readonly keywords?: string[];
 }
