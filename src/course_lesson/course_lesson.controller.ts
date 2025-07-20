@@ -11,6 +11,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { CourseLessonService } from './course_lesson.service';
 import { CourseLesson } from 'src/schema/course_lesson.schema';
@@ -39,7 +40,14 @@ export class CourseLessonController {
     @UploadedFile() pdfUrl: Express.Multer.File,
     // @Fileup
   ): Promise<CourseLesson> {
-    console.log("Create course dto", createCourseLessonDto, pdfUrl);
+        if (!pdfUrl) {
+      throw new BadRequestException('PDF file is required');
+    }
+
+    if (!pdfUrl.mimetype.includes('pdf')) {
+      throw new BadRequestException('Only PDF files are allowed');
+    }
+
     return this.lessonService.create(createCourseLessonDto, courseId, pdfUrl);
   }
 
@@ -69,6 +77,10 @@ export class CourseLessonController {
     @Body() updateCourseLessonDto: UpdateCourseLessonDto,
     @UploadedFile() pdfUrl?: Express.Multer.File
   ): Promise<CourseLesson> {
+      // Additional file validation if needed
+    if (pdfUrl && !pdfUrl.mimetype.includes('pdf')) {
+      throw new BadRequestException('Only PDF files are allowed');
+    }
     return this.lessonService.update(lessonId, updateCourseLessonDto, pdfUrl);
   }
 
