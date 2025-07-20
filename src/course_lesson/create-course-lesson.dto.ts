@@ -7,7 +7,6 @@ import {
   MinLength, 
   IsNotEmpty, 
   ArrayMinSize,
-  IsStringEach
 } from "class-validator";
 
 export class CreateCourseLessonDto {
