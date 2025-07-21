@@ -11,6 +11,7 @@ import { CourseLessonModule } from './course_lesson/course_lesson.module';
 import { CourseLessonController } from './course_lesson/course_lesson.controller';
 import { LessonTestModule } from './lesson_test/lesson_test.module';
 import { UploadModule } from './upload/upload.module';
+import { TestQuestionModule } from './test_question/test_question.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UploadModule } from './upload/upload.module';
    CourseLessonModule,
    LessonTestModule,
    UploadModule,
+   TestQuestionModule,
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],
