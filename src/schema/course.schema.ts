@@ -17,8 +17,8 @@ export class Course {
     image?: string;
 
     // Array of embedded lesson documents
-    @Prop({ type: [courseLessonSchema] })
-    lessons: CourseLesson[];
+@Prop({ type: [{ type: Types.ObjectId, ref: 'CourseLesson' }], required: true })
+  lessons: Types.ObjectId[];
 
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
     teacher: User

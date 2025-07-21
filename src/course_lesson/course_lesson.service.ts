@@ -1,4 +1,4 @@
-import { HttpCode, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpCode, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from 'src/schema/course.schema';
@@ -20,54 +20,86 @@ export class CourseLessonService {
     courseId: string,
     pdfUrl: Express.Multer.File,
   ): Promise<CourseLesson> {
-    console.log(courseId);
-
     let pdf: string | null = null;
-    pdf = "/course-covers/" + pdfUrl.path;
-    console.log("pdf url", pdf);
 
-    // Hardcoded ID for testing
-    const hardcodedCourseId = new Types.ObjectId(courseId);
+    // Construct PDF URL (assuming pdfUrl.path is the file path from Multer)
+    pdf = `/course-covers/${pdfUrl.filename || pdfUrl.path}`; // Use filename if available
+    console.log('PDF URL:', pdf);
 
+    // Validate and convert courseId to ObjectId
+    let formattedCourseId: Types.ObjectId;
+    try {
+      formattedCourseId = new Types.ObjectId(courseId.trim());
+    } catch (error) {
+      throw new NotFoundException('Invalid course ID format');
+    }
 
-    // 1. Verify the course exists using hardcoded ID
-    const course = await this.courseModel.findById(hardcodedCourseId);
-
+    // 1. Verify the course exists
+    const course = await this.courseModel.findById(formattedCourseId);
     if (!course) {
-      throw new NotFoundException('Course not found with hardcoded ID');
+      throw new NotFoundException(`Course not found with ID ${courseId}`);
     }
 
     // 2. Create lesson data
     const lessonData = {
       ...createCourseLessonDto,
-      course: hardcodedCourseId, // Using the hardcoded ObjectId
-      pdfUrl: pdf
+      course: formattedCourseId, // Store the ObjectId reference
+      pdfUrl: pdf,
     };
     console.log('Lesson data:', lessonData);
 
     // 3. Create and save lesson
+    let savedLesson: CourseLessonDocument;
     try {
       const lesson = new this.lessonModel(lessonData);
-      const savedLesson = await lesson.save();
+      savedLesson = await lesson.save();
       console.log('Saved lesson:', savedLesson);
-      return savedLesson;
     } catch (error) {
-      console.error('Save error:', error);
-      throw error;
+      console.error('Save error:', error.message);
+      throw new Error(`Failed to save lesson: ${error.message}`);
     }
+
+    // 4. Update the course's lessons array
+    await this.courseModel.findByIdAndUpdate(
+      formattedCourseId,
+      { $push: { lessons: savedLesson._id } },
+      { new: true, runValidators: true },
+    ).exec();
+
+    return savedLesson;
   }
 
-  async findAllByCourse(courseId: string): Promise<CourseLesson[]> {
-    console.table(courseId);
-    const fomattedCoursId = new Types.ObjectId(courseId.trim());
-    console.log(fomattedCoursId);
-    const course = await this.courseModel.findById(fomattedCoursId)
-      .populate('lessons');
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-    return course.lessons as CourseLesson[];
+async findAllByCourse(courseId: string): Promise<CourseLesson[]> {
+  // Validate courseId
+  if (!Types.ObjectId.isValid(courseId)) {
+    throw new BadRequestException('Invalid course ID');
   }
+
+  console.log('Received courseId:', courseId);
+
+  // No need to manually create ObjectId since findById handles string-to-ObjectId conversion
+  const course = await this.courseModel
+    .findById(courseId)
+    .populate<{ lessons: CourseLesson[] }>({
+      path: 'lessons',
+      populate: {
+        path: 'tests',
+        model: 'LessonTest',
+      },
+    })
+    .lean();
+
+  if (!course) {
+    throw new NotFoundException('Course not found');
+  }
+
+  if (!course.lessons || course.lessons.length === 0) {
+    console.log('No lessons found for this course');
+    return [];
+  }
+
+  return course.lessons;
+}
 
   async findOne(id: string): Promise<CourseLesson> {
     const lesson = await this.lessonModel.findById(id);

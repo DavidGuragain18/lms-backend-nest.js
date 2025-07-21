@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Types } from "mongoose";
 import { Course } from "./course.schema";
-import { CourseTest, courseTestSchema } from "./course.test.schema";
 
 export type CourseLessonDocument = HydratedDocument<CourseLesson>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class CourseLesson {
   @Prop({ required: true })
   title: string;
@@ -22,15 +21,14 @@ export class CourseLesson {
   @Prop()
   readingDuration?: number; // Estimated reading time in minutes
 
-    // Reference to the Course this lesson belongs to
   @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
   course: Course;
 
   @Prop({ type: [String] })
   keywords?: string[]; // Optional tags for the lesson
 
-  @Prop({type: [courseTestSchema]})
-  tests: CourseTest[];
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'LessonTest' }] })
+  tests?: Types.ObjectId[]; // Array of LessonTest references
 }
 
-export const courseLessonSchema = SchemaFactory.createForClass(CourseLesson)
+export const courseLessonSchema = SchemaFactory.createForClass(CourseLesson);
