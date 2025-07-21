@@ -26,8 +26,6 @@ export class CourseLessonService {
     pdf = "/course-covers/" + pdfUrl.path;
     console.log("pdf url", pdf);
 
-
-
     // Hardcoded ID for testing
     const hardcodedCourseId = new Types.ObjectId(courseId);
 
