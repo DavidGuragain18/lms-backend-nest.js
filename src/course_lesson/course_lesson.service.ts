@@ -60,7 +60,11 @@ export class CourseLessonService {
   }
 
   async findAllByCourse(courseId: string): Promise<CourseLesson[]> {
-    const course = await this.courseModel.findById(courseId).populate('lessons');
+    console.table(courseId);
+    const fomattedCoursId = new Types.ObjectId(courseId.trim());
+    console.log(fomattedCoursId);
+    const course = await this.courseModel.findById(fomattedCoursId)
+      .populate('lessons');
     if (!course) {
       throw new NotFoundException('Course not found');
     }
@@ -91,7 +95,7 @@ export class CourseLessonService {
     // Hardcoded ID for testing
     const hardcodedLessonId = new Types.ObjectId(lessonId);
 
-    const lesson = await this.lessonModel.findByIdAndUpdate(hardcodedLessonId, updatedFields, { new: true } );
+    const lesson = await this.lessonModel.findByIdAndUpdate(hardcodedLessonId, updatedFields, { new: true });
 
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
