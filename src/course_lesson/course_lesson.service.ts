@@ -1,10 +1,11 @@
-import { BadRequestException, HttpCode, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpCode, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from 'src/schema/course.schema';
 import { CourseLesson, CourseLessonDocument } from 'src/schema/course_lesson.schema';
 import { CreateCourseLessonDto } from './create-course-lesson.dto';
 import { UpdateCourseLessonDto } from './update-course-lesson.dto';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class CourseLessonService {
@@ -13,6 +14,7 @@ export class CourseLessonService {
     private readonly lessonModel: Model<CourseLessonDocument>,
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
+    @Inject(REQUEST) private request: Request
   ) { }
 
   async create(

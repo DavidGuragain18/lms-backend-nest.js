@@ -21,7 +21,10 @@ export class Course {
   lessons: Types.ObjectId[];
 
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-    teacher: User
+    teacher: User;
+
+    @Prop({ type: [{ type: Types.ObjectId, ref: 'CourseReview' }] })
+  reviews: Types.ObjectId[];
 
 }
 

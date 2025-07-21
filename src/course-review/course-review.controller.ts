@@ -8,7 +8,7 @@ import { UpdateReviewDto } from './update_review.dto';
 @ApiTags('course-reviews')
 @Controller('course-reviews')
 export class CourseReviewController {
-  constructor(private readonly courseReviewService: CourseReviewService) {}
+  constructor(private readonly courseReviewService: CourseReviewService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new course review' })
@@ -22,12 +22,11 @@ export class CourseReviewController {
   @Get('course/:courseId')
   @ApiOperation({ summary: 'Get all reviews for a course' })
   @ApiParam({ name: 'courseId', description: 'ID of the course', example: '687dfbe86be859bf15944437' })
-  @ApiQuery({ name: 'approvedOnly', required: false, type: Boolean, description: 'Filter by approved reviews only', example: true })
   @ApiResponse({ status: 200, description: 'List of reviews', type: [CourseReview] })
   @ApiResponse({ status: 400, description: 'Invalid course ID' })
   @ApiResponse({ status: 404, description: 'Course not found' })
-  findAllByCourse(@Param('courseId') courseId: string, @Query('approvedOnly') approvedOnly: string = 'true') {
-    return this.courseReviewService.findAllByCourse(courseId, approvedOnly === 'true');
+  findAllByCourse(@Param('courseId') courseId: string) {
+    return this.courseReviewService.findAllByCourse(courseId, );
   }
 
   @Get()
@@ -58,16 +57,7 @@ export class CourseReviewController {
     return this.courseReviewService.update(id, updateReviewDto);
   }
 
-  @Put(':id/approve')
-  @ApiOperation({ summary: 'Approve or disapprove a review' })
-  @ApiParam({ name: 'id', description: 'ID of the review', example: '687dfbe86be859bf15944441' })
-  @ApiQuery({ name: 'isApproved', required: true, type: Boolean, description: 'Approval status', example: true })
-  @ApiResponse({ status: 200, description: 'Updated review', type: CourseReview })
-  @ApiResponse({ status: 400, description: 'Invalid review ID' })
-  @ApiResponse({ status: 404, description: 'Review not found' })
-  approveReview(@Param('id') id: string, @Query('isApproved') isApproved: string) {
-    return this.courseReviewService.approveReview(id, isApproved === 'true');
-  }
+  
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a review by ID' })
