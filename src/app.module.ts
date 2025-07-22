@@ -13,6 +13,7 @@ import { LessonTestModule } from './lesson_test/lesson_test.module';
 import { UploadModule } from './upload/upload.module';
 import { CourseReviewModule } from './course-review/course-review.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
+import { GroupChatModule } from './group_chat/group_chat.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
    UploadModule,
    CourseReviewModule,
    EnrollmentModule,
+   GroupChatModule,
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],
