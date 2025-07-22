@@ -12,6 +12,7 @@ import { CourseLessonController } from './course_lesson/course_lesson.controller
 import { LessonTestModule } from './lesson_test/lesson_test.module';
 import { UploadModule } from './upload/upload.module';
 import { CourseReviewModule } from './course-review/course-review.module';
+import { EnrollmentModule } from './enrollment/enrollment.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CourseReviewModule } from './course-review/course-review.module';
    LessonTestModule,
    UploadModule,
    CourseReviewModule,
+   EnrollmentModule,
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],

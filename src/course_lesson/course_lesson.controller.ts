@@ -60,7 +60,7 @@ export class CourseLessonController {
 
   @Get(':lessonId')
   async findOne(
-    @Param('lessonId', ParseUUIDPipe) lessonId: string,
+    @Param('lessonId') lessonId: string,
   ): Promise<CourseLesson> {
     return this.lessonService.findOne(lessonId);
   }
