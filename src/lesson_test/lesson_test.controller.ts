@@ -6,7 +6,6 @@ import {
   Delete,
   Param,
   Body,
-  ParseUUIDPipe,
   Query,
   HttpCode,
   HttpStatus,
@@ -67,7 +66,7 @@ export class LessonTestController {
   @ApiResponse({ status: 204, description: 'Test deleted successfully' })
   @ApiResponse({ status: 404, description: 'Test not found' })
   async remove(
-    @Param('testId', ParseUUIDPipe) testId: string,
+    @Param('testId') testId: string,
   ): Promise<{ deleted: boolean; message?: string }> {
     return this.testService.remove(testId);
   }
