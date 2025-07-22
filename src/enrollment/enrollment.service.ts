@@ -40,14 +40,15 @@ export class EnrollmentService {
     }
 
     const existingEnrollment = await this.enrollmentModel
-      .findOne({ courseId: createEnrollmentDto.courseId, studentId: user._id })
+      .findOne({ courseId: createEnrollmentDto.courseId, studentId: user.sub })
       .lean();
+
     if (existingEnrollment) {
       throw new BadRequestException('You are already enrolled in this course');
     }
 
     const enrollment = new this.enrollmentModel({
-      studentId: user._id,
+      studentId: user.sub,
       courseId: createEnrollmentDto.courseId,
       status: 'pending',
       completedChapters: [],
@@ -142,48 +143,48 @@ export class EnrollmentService {
   /**
    * Update an enrollment (e.g., status or completed chapters)
    */
-  async update(id: string, updateEnrollmentDto: UpdateEnrollmentDto): Promise<CourseEnrollment> {
-    const user = this.request.user;
-    if (!user || !Types.ObjectId.isValid(user.sub)) {
-      throw new BadRequestException('Invalid user in request');
-    }
+//   async update(id: string, updateEnrollmentDto: UpdateEnrollmentDto): Promise<CourseEnrollment> {
+//     const user = this.request.user;
+//     if (!user || !Types.ObjectId.isValid(user.sub)) {
+//       throw new BadRequestException('Invalid user in request');
+//     }
 
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid enrollment ID');
-    }
+//     if (!Types.ObjectId.isValid(id)) {
+//       throw new BadRequestException('Invalid enrollment ID');
+//     }
 
-    const enrollment = await this.enrollmentModel.findById(id).lean();
-    if (!enrollment) {
-      throw new NotFoundException('Enrollment not found');
-    }
+//     const enrollment = await this.enrollmentModel.findById(id).lean();
+//     if (!enrollment) {
+//       throw new NotFoundException('Enrollment not found');
+//     }
 
-    // Restrict updates to the enrollment's student or admin
-    if (enrollment.studentId.toString() !== user._id.toString()) {
-      throw new ForbiddenException('You are not authorized to update this enrollment');
-    }
+//     // Restrict updates to the enrollment's student or admin
+//     if (enrollment.studentId.toString() !== user._id.toString()) {
+//       throw new ForbiddenException('You are not authorized to update this enrollment');
+//     }
 
 
-    if (updateEnrollmentDto.status && !['approved', 'rejected', 'pending'].includes(updateEnrollmentDto.status)) {
-      throw new BadRequestException('Invalid status');
-    }
-    if (updateEnrollmentDto.completedChapters) {
-      const course = await this.courseModel.findById(enrollment.courseId).lean();
-      if (course.lessons && updateEnrollmentDto.completedChapters.some(index => index >= course.lessons.length)) {
-        throw new BadRequestException('Invalid chapter index');
-      }
-    }
+//     if (updateEnrollmentDto.status && !['approved', 'rejected', 'pending'].includes(updateEnrollmentDto.status)) {
+//       throw new BadRequestException('Invalid status');
+//     }
+//     if (updateEnrollmentDto.completedChapters) {
+//       const course = await this.courseModel.findById(enrollment.courseId).lean();
+//       if (course.lessons && updateEnrollmentDto.completedChapters.some(index => index >= course.lessons.length)) {
+//         throw new BadRequestException('Invalid chapter index');
+//       }
+//     }
 
-    const updatedEnrollment = await this.enrollmentModel
-      .findByIdAndUpdate(id, { $set: updateEnrollmentDto }, { new: true })
-      .populate('courseId studentId', 'title name email')
-      .lean();
+//     const updatedEnrollment = await this.enrollmentModel
+//       .findByIdAndUpdate(id, { $set: updateEnrollmentDto }, { new: true })
+//       .populate('courseId studentId', 'title name email')
+//       .lean();
 
-    if (!updatedEnrollment) {
-      throw new NotFoundException('Enrollment not found');
-    }
+//     if (!updatedEnrollment) {
+//       throw new NotFoundException('Enrollment not found');
+//     }
 
-    return updatedEnrollment;
-  }
+//     return updatedEnrollment;
+//   }
 
   /**
    * Approve or reject an enrollment (admin only)
@@ -213,8 +214,8 @@ export class EnrollmentService {
    * Delete an enrollment
    */
   async remove(id: string): Promise<{ deleted: boolean; message: string }> {
-    const user = this.request.user as User;
-    if (!user || !Types.ObjectId.isValid(user._id)) {
+    const user = this.request.user;
+    if (!user || !Types.ObjectId.isValid(user.sub)) {
       throw new BadRequestException('Invalid user in request');
     }
 
@@ -228,7 +229,7 @@ export class EnrollmentService {
     }
 
     // Restrict deletion to the enrollment's student or admin
-    if (enrollment.studentId.toString() !== user._id.toString()) {
+    if (enrollment.studentId.toString() !== user.sub.toString()) {
       throw new ForbiddenException('You are not authorized to delete this enrollment');
     }
 
@@ -262,5 +263,13 @@ export class EnrollmentService {
     }
 
     return this.enrollmentModel.countDocuments(query);
+  }
+
+  async findEnrollmentsForTeacher(status?: string) {
+    const user = this.request.user;
+    if (!user || !Types.ObjectId.isValid(user.sub)) {
+      throw new BadRequestException('Invalid user in request');
+    }
+    return this.enrollmentModel.find({teacherId: user.sub}).populate('courseId studentId', 'title name email').lean();
   }
 }

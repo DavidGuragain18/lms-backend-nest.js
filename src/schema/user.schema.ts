@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -29,6 +29,9 @@ export class User {
     default: UserRole.STUDENT, // Default role if not specified
   })
   role: UserRole;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'CourseEnrollment' }], default: [] })
+  enrollments?: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

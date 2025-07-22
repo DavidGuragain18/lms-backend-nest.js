@@ -64,7 +64,7 @@ export class EnrollmentController {
   @ApiResponse({ status: 403, description: 'Unauthorized to update this enrollment' })
   @ApiResponse({ status: 404, description: 'Enrollment not found' })
   update(@Param('id') id: string, @Body() updateEnrollmentDto: UpdateEnrollmentDto) {
-    return this.enrollmentService.update(id, updateEnrollmentDto);
+    // return this.enrollmentService.update(id, updateEnrollmentDto);
   }
 
   @Put(':id/status')
@@ -101,5 +101,13 @@ export class EnrollmentController {
   @ApiResponse({ status: 404, description: 'Course not found' })
   countByCourse(@Param('courseId') courseId: string, @Query('status') status?: string) {
     return this.enrollmentService.countByCourse(courseId, status);
+  }
+
+    @Get('count/:courseId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Find all enrollments for teacher. Teacher can approve disapprove and delete the enrollments' })
+  @ApiQuery({ name: 'status', required: false, enum: ['approved', 'rejected', 'pending'], description: 'Filter by status' })
+  findEnrollmentsForTeacher(@Query('status') status?: string) {
+    return this.enrollmentService.findEnrollmentsForTeacher(status);
   }
 }
