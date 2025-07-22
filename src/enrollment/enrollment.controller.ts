@@ -44,7 +44,7 @@ export class EnrollmentController {
     return this.enrollmentService.findAllByStudent(status);
   }
 
-  @Get(':id')
+  @Get('find-one/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get an enrollment by ID' })
   @ApiParam({ name: 'id', description: 'ID of the enrollment', example: '687dfbe86be859bf15944442' })
@@ -103,7 +103,7 @@ export class EnrollmentController {
     return this.enrollmentService.countByCourse(courseId, status);
   }
 
-    @Get('count/:courseId')
+    @Get('enrollments-for-teacher')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Find all enrollments for teacher. Teacher can approve disapprove and delete the enrollments' })
   @ApiQuery({ name: 'status', required: false, enum: ['approved', 'rejected', 'pending'], description: 'Filter by status' })

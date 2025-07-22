@@ -265,11 +265,47 @@ export class EnrollmentService {
     return this.enrollmentModel.countDocuments(query);
   }
 
-  async findEnrollmentsForTeacher(status?: string) {
+
+  async findEnrollmentsForTeacher(status?: string): Promise<CourseEnrollment[]> {
     const user = this.request.user;
-    if (!user || !Types.ObjectId.isValid(user.sub)) {
-      throw new BadRequestException('Invalid user in request');
+
+
+    // Validate teacher role
+  
+    // Find courses taught by the user
+    const courses = await this.courseModel
+      .find({ teacher: user.sub }) // Ensure _id is treated as ObjectId
+      .select('_id')
+      .lean();
+
+    console.log('Courses found:', courses); // Debug: Log courses
+
+    if (!courses.length) {
+      console.log('No courses found for teacher:', user._id);
+      return []; // No courses found for the teacher
     }
-    return this.enrollmentModel.find({teacherId: user.sub}).populate('courseId studentId', 'title name email').lean();
+
+    const courseIds = courses.map(course => course._id.toString());
+    console.log('Course IDs:', courseIds); // Debug: Log course IDs
+
+    const query: any = { courseId: { $in: courseIds } };
+
+    // Apply status filter if provided
+    if (status) {
+      if (!['approved', 'rejected', 'pending'].includes(status)) {
+        throw new BadRequestException('Invalid status. Must be one of: approved, rejected, pending');
+      }
+      query.status = status;
+    }
+    console.log('Query:', query); // Debug: Log the final query
+
+    const enrollments = await this.enrollmentModel
+      .find(query)
+      .populate('courseId studentId', 'title name email')
+      .lean();
+
+    console.log('Enrollments found:', enrollments); // Debug: Log enrollments
+    return enrollments;
   }
+  
 }
