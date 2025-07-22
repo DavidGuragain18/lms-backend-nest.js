@@ -15,7 +15,7 @@ import { CreateTestDto } from './create-test.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { LessonTest } from 'src/schema/lesson.test.schema';
 
-@ApiTags('lesson-tests') // Groups endpoints under "lesson-tests" in Swagger
+@ApiTags('lesson-tests') 
 @Controller('/tests')
 export class LessonTestController {
   constructor(private readonly testService: LessonTestService) {}

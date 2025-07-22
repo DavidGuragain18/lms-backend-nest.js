@@ -51,7 +51,7 @@ export class CourseLessonController {
     return this.lessonService.create(createCourseLessonDto, courseId, pdfUrl);
   }
 
-  @Get()
+  @Get(":courseId")
   async findAllByCourse(
     @Param('courseId') courseId: string,
   ): Promise<CourseLesson[]> {
