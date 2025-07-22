@@ -22,11 +22,11 @@ import { InterceptorsConsumer } from '@nestjs/core/interceptors';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/multer.config';
 
-@Controller('courses/:courseId/lessons')
+@Controller('/lessons')
 export class CourseLessonController {
   constructor(private readonly lessonService: CourseLessonService) { }
 
-  @Post()
+  @Post("/:courseId")
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor("pdfUrl", multerOptions))
@@ -86,7 +86,7 @@ export class CourseLessonController {
 
   @Delete(':lessonId')
   async remove(
-    @Param('lessonId', ParseUUIDPipe) lessonId: string,
+    @Param('lessonId',) lessonId: string,
   ): Promise<{ deleted: boolean; message?: string }> {
     return this.lessonService.remove(lessonId);
   }

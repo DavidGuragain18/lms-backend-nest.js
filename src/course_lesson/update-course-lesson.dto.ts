@@ -1,20 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { 
   IsString, 
   IsOptional, 
-  IsNumber, 
+  IsInt, 
   Min, 
   MinLength, 
   IsArray, 
   IsNotEmpty, 
   ArrayMinSize, 
   ValidateIf,
-  IsInt
+  IsNumber,
 } from 'class-validator';
 
 export class UpdateCourseLessonDto {
   @ApiProperty({ 
-    required: true,
+    required: false,
     example: 'Advanced TypeScript Patterns',
     description: 'Title of the lesson'
   })
@@ -24,7 +25,7 @@ export class UpdateCourseLessonDto {
   readonly title?: string;
 
   @ApiProperty({ 
-    required: true,
+    required: false,
     example: 'Deep dive into advanced TypeScript concepts and patterns',
     description: 'Detailed description of the lesson'
   })
@@ -40,23 +41,11 @@ export class UpdateCourseLessonDto {
     description: 'PDF file for the lesson (optional)'
   })
   @IsOptional()
-  readonly pdfUrl?: any;
+  readonly pdfUrl?: any; // Keep as any to handle file or string
+
 
   @ApiProperty({ 
-    required: true, 
-    type: Number,
-    example: 15,
-    description: 'Number of pages in the lesson',
-    minimum: 1
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsInt()
-  @Min(1, { message: 'Pages must be at least 1' })
-  readonly pages?: number;
-
-  @ApiProperty({ 
-    required: true, 
+    required: false, 
     type: Number,
     example: 30,
     description: 'Estimated reading duration in minutes',
@@ -65,17 +54,17 @@ export class UpdateCourseLessonDto {
   @IsOptional()
   @IsNumber()
   @Min(1, { message: 'Reading duration must be at least 1 minute' })
+  @Transform(({ value }) => (typeof value === 'string' ? parseInt(value, 10) : value))
   readonly readingDuration?: number;
 
   @ApiProperty({ 
-    required: true, 
+    required: false, 
     type: [String],
     example: ['TypeScript', 'Design Patterns'],
     description: 'Array of keywords for the lesson'
   })
   @IsOptional()
   @IsArray()
-  @ArrayMinSize(1, { message: 'Keywords array cannot be empty if provided' })
   @IsString({ each: true, message: 'Each keyword must be a string' })
   readonly keywords?: string[];
 }
