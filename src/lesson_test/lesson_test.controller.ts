@@ -16,11 +16,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from 
 import { LessonTest } from 'src/schema/lesson.test.schema';
 
 @ApiTags('lesson-tests') // Groups endpoints under "lesson-tests" in Swagger
-@Controller('lessons/:lessonId/tests')
+@Controller('/tests')
 export class LessonTestController {
   constructor(private readonly testService: LessonTestService) {}
 
-  @Post()
+  @Post(":lessonId")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new test for a lesson' })
   @ApiParam({ name: 'lessonId', description: 'ID of the lesson', example: '687dfbe86be859bf15944438' })
@@ -34,7 +34,7 @@ export class LessonTestController {
     return this.testService.create({ ...createTestDto, lesson: lessonId });
   }
 
-  @Get()
+  @Get(":lessonId")
   @ApiOperation({ summary: 'Get all tests for a specific lesson' })
   @ApiParam({ name: 'lessonId', description: 'ID of the lesson', example: '687dfbe86be859bf15944438' })
   @ApiResponse({ status: 200, description: 'List of tests retrieved successfully', type: [LessonTest] })
@@ -47,8 +47,7 @@ export class LessonTestController {
 
   @Get(':testId')
   @ApiOperation({ summary: 'Get a specific test by ID' })
-  @ApiParam({ name: 'lessonId', description: 'ID of the lesson', example: '687dfbe86be859bf15944438' })
-  @ApiParam({ name: 'testId', description: 'ID of the test (UUID)', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiParam({ name: 'testId', description: 'ID of the test ', example: '550e8400-e29b-41d4-a716-446655440000' })
   @ApiResponse({ status: 200, description: 'Test retrieved successfully', type: LessonTest })
   @ApiResponse({ status: 404, description: 'Test not found' })
   async findOne(
@@ -61,8 +60,7 @@ export class LessonTestController {
   @Delete(':testId')
   @HttpCode(HttpStatus.NO_CONTENT) // Changed to 204 for DELETE success with no content
   @ApiOperation({ summary: 'Delete a specific test by ID' })
-  @ApiParam({ name: 'lessonId', description: 'ID of the lesson', example: '687dfbe86be859bf15944438' })
-  @ApiParam({ name: 'testId', description: 'ID of the test (UUID)', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiParam({ name: 'testId', description: 'ID of the test', example: '550e8400-e29b-41d4-a716-446655440000' })
   @ApiResponse({ status: 204, description: 'Test deleted successfully' })
   @ApiResponse({ status: 404, description: 'Test not found' })
   async remove(

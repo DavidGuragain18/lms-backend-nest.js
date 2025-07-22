@@ -17,12 +17,14 @@ export class AuthenticationService {
     email,
     password,
     name,
+    role,
     file
   }: {
     email: string;
     password: string;
     name: string;
-    file?: Express.Multer.File
+    file?: Express.Multer.File,
+    role: string,
   }) {
     // 1. Check if user exists
     const existingUser = await this.userModel.findOne({ email });
@@ -45,7 +47,7 @@ export class AuthenticationService {
       password: hashedPassword,
       name,
       image,
-      role: 'student',
+      role: role,
     });
 
     // 4. Generate JWT token
