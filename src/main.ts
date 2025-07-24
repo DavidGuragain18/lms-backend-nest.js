@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Apply global pipes
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, validationError: { target: false } }));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: false, transform: true, validationError: { target: false } }));
 
   // Swagger configuration
   const config = new DocumentBuilder()

@@ -1,10 +1,11 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Put } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';  // Correct relative path
 import { ApiTags, ApiResponse, ApiOperation, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { RegisterDto } from './register.dto';
 import { LoginDto } from './login.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/multer.config';
+import { UpdateUserDto } from './update-user.dto';
 
 @ApiTags('Authentication')
 @Controller('authentication')
@@ -43,5 +44,23 @@ export class AuthenticationController {
   })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  @Put('me')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateUserDto })
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  @ApiOperation({ summary: 'Update user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateProfile(
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.authService.updateUserProfile(
+      updateUserDto.name,
+      file,
+    );
   }
 }

@@ -1,16 +1,19 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/schema/user.schema';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private readonly jwtService: JwtService, // Inject JWT service
     @InjectModel(User.name) private userModel: Model<User>,
-  ) {}
+    @Inject(REQUEST) private request: Request
+  ) { }
 
   // ========== REGISTRATION ==========
   async register({
@@ -28,7 +31,7 @@ export class AuthenticationService {
   }) {
     // 1. Check if user exists
     const existingUser = await this.userModel.findOne({ email });
-      
+
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
@@ -36,8 +39,8 @@ export class AuthenticationService {
     // 2. Hash password (async recommended)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let image :string|null = null;
-    if(file){
+    let image: string | null = null;
+    if (file) {
       image = `/uploads/${file.filename}`
     }
 
@@ -52,7 +55,7 @@ export class AuthenticationService {
 
     // 4. Generate JWT token
     const payload = { sub: newUser._id, email: newUser.email, role: newUser.role };
-    const accessToken = this.jwtService.sign(payload, {secret: "secret"});
+    const accessToken = this.jwtService.sign(payload, { secret: "secret" });
 
     // // 5. Return user + token (without password)
     const { password: _, ...user } = newUser.toObject();
@@ -75,10 +78,33 @@ export class AuthenticationService {
 
     // 3. Generate JWT token
     const payload = { sub: user._id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload, {secret: "secret"});
+    const accessToken = this.jwtService.sign(payload, { secret: "secret" });
 
     // 4. Return user + token (without password)
     const { password: _, ...userData } = user.toObject();
     return { user: userData, accessToken };
+  }
+
+  async updateUserProfile(
+    name: string,
+    file?: Express.Multer.File,
+  ): Promise<User> {
+    const userId = this.request.user.sub;
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.name = name;
+
+    if (file) {
+      user.image = `/uploads/${file.filename}`;
+    }
+
+    await user.save();
+
+    // Convert to object and remove password
+    const userObject = user.toObject();
+    return userObject;
   }
 }

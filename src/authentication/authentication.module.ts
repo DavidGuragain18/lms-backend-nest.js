@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
 import { User, UserSchema } from '../schema/user.schema';  // Correct path
+import { NestApplication } from '@nestjs/core';
+import { AuthMiddleware } from 'src/middleware/auth.middleware';
 
 @Module({
   imports: [
@@ -18,4 +20,13 @@ import { User, UserSchema } from '../schema/user.schema';  // Correct path
   providers: [AuthenticationService, JwtService],
   controllers: [AuthenticationController],
 })
-export class AuthenticationModule {}
+
+export class AuthenticationModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes(
+        { path: 'authentication/me', method: RequestMethod.PUT }
+      );
+  }
+}
