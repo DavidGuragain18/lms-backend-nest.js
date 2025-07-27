@@ -45,7 +45,7 @@ export class CourseTestService {
       { new: true },
     );
 
-    return savedTest.populate('Course',);
+    return savedTest;
   }
 
   /**
