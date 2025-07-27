@@ -97,5 +97,35 @@ export class AuthenticationController {
   }
 
 
+  @Put('suspend-un-suspend')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Suspend or unsuspend a user' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        isSuspended: {
+          type: 'boolean',
+          example: true,
+          description: 'true to suspend, false to unsuspend'
+        },
+         userId: {
+          type: "string",
+          example: "1325695",
+          description: 'Id of user to suspend'
+        },
+      },
+      required: ['isSuspended']
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User successfully suspended or unsuspended'
+  })
+    async suspendUnSuspend(@Body('isSuspended') isSuspended: boolean, @Body("userId") userId: string) {
+    return this.authService.suspendUnSuspendUser(isSuspended, userId);
+  }
+
+
 
 }

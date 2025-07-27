@@ -34,7 +34,10 @@ export class User {
   enrollments?: Types.ObjectId[];
 
   @Prop({default: []})
-  notification_tokens: string[]
+  notification_tokens: string[];
+
+    @Prop({default: false})
+  isSuspended: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

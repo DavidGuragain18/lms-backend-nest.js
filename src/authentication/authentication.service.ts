@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/schema/user.schema';
@@ -124,5 +124,17 @@ export class AuthenticationService {
     user.notification_tokens.push( token );
     await user.save();
     
+  }
+
+  async suspendUnSuspendUser(isSuspended: boolean, userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.isSuspended = isSuspended;
+    await user.save();
+    return true;
+
   }
 }
