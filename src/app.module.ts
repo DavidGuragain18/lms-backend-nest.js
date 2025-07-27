@@ -16,22 +16,28 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
 import { GroupChatModule } from './group_chat/group_chat.module';
 import { NotificationModule } from './notification/notification.module';
 import { CourseTestModule } from './course_test/course_test.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
-   MongooseModule.forRoot('mongodb://localhost:27017/'),
-   AuthenticationModule,
-   CourseModule,
-   CourseLessonModule,
-   LessonTestModule,
-   UploadModule,
-   CourseReviewModule,
-   EnrollmentModule,
-   GroupChatModule,
-   NotificationModule,
-   CourseTestModule,
+    MongooseModule.forRoot('mongodb://localhost:27017/'),
+    AuthenticationModule,
+    CourseModule,
+    CourseLessonModule,
+    LessonTestModule,
+    UploadModule,
+    CourseReviewModule,
+    EnrollmentModule,
+    GroupChatModule,
+    NotificationModule,
+    CourseTestModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads', // optional, this will make files available under /uploads
+    }),
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],
 })
-export class AppModule {}
+export class AppModule { }
