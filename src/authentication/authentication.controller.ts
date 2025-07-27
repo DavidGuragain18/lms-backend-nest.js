@@ -1,4 +1,4 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Put } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Put, Get } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';  // Correct relative path
 import { ApiTags, ApiResponse, ApiOperation, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { RegisterDto } from './register.dto';
@@ -109,7 +109,7 @@ export class AuthenticationController {
           example: true,
           description: 'true to suspend, false to unsuspend'
         },
-         userId: {
+        userId: {
           type: "string",
           example: "1325695",
           description: 'Id of user to suspend'
@@ -122,8 +122,17 @@ export class AuthenticationController {
     status: HttpStatus.OK,
     description: 'User successfully suspended or unsuspended'
   })
-    async suspendUnSuspend(@Body('isSuspended') isSuspended: boolean, @Body("userId") userId: string) {
+  async suspendUnSuspend(@Body('isSuspended') isSuspended: boolean, @Body("userId") userId: string) {
     return this.authService.suspendUnSuspendUser(isSuspended, userId);
+  }
+
+  @Get("get-all-users")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User successfully suspended or unsuspended'
+  })
+  async getAllUsers() {
+    return this.authService.getAllUsers();
   }
 
 

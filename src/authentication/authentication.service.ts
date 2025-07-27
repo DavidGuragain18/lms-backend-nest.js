@@ -70,6 +70,10 @@ export class AuthenticationService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if(user.isSuspended){
+      throw new UnauthorizedException('User is suspended');
+    }
+
     // 2. Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -136,5 +140,9 @@ export class AuthenticationService {
     await user.save();
     return true;
 
+  }
+
+  async getAllUsers() {
+    return await this.userModel.find();
   }
 }
