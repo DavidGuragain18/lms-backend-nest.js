@@ -1,5 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
+import { Request } from 'express';
+import { request } from 'http';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from 'src/schema/course.schema';
 import { CourseEnrollmentDocument } from 'src/schema/course_enrollment.schema';
@@ -16,6 +19,7 @@ export class NotificationService {
         private courseModel: Model<CourseDocument>,
         @InjectModel(Course.name)
         private courseEnrollmentModel: Model<CourseEnrollmentDocument>,
+        @Inject(REQUEST) private request: Request,
     ) { }
 
     async createNotification(
@@ -98,15 +102,13 @@ async createTestNotification({
     }
 
     async getUserNotifications(
-        userId: Types.ObjectId | string,
-        limit: number = 10,
-        skip: number = 0
+  
     ): Promise<NotificationDocument[]> {
+        console.log(this.request.user);
+        
         return this.notificationModel
-            .find({ recipient: userId })
+            .find({ recipient: this.request.user.sub })
             .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
             .exec();
     }
 

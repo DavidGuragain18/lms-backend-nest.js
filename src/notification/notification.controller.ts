@@ -6,8 +6,7 @@ import {
   Param,
   Post,
   Put,
-  Query,
-  UseGuards,
+  Query,  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -72,16 +71,14 @@ export class NotificationController {
 
   @Get()
   @ApiOperation({ summary: 'Get all notifications for user' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'skip', required: false, type: Number })
+
   @ApiResponse({ status: 200, description: 'Notifications retrieved' })
   async findAll(
-    @Query('limit') limit = 10,
-    @Query('skip') skip = 0,
+
   ) {
+    
     // In a real app, you'd get userId from the authenticated user
-    const userId = 'user-id-from-token'; // Replace with actual user ID from request
-    return this.notificationService.getUserNotifications(userId, limit, skip);
+    return this.notificationService.getUserNotifications();
   }
 
   @Get('unread/count')
