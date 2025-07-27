@@ -10,7 +10,7 @@ import { UpdateUserDto } from './update-user.dto';
 @ApiTags('Authentication')
 @Controller('authentication')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthenticationService) {}
+  constructor(private readonly authService: AuthenticationService) { }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -18,29 +18,29 @@ export class AuthenticationController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: RegisterDto })
   @UseInterceptors(FileInterceptor("image", multerOptions))
-  @ApiResponse({ 
-    status: 201, 
-    description: 'User successfully registered' 
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully registered'
   })
-  @ApiResponse({ 
-    status: 409, 
-    description: 'Email already in use' 
+  @ApiResponse({
+    status: 409,
+    description: 'Email already in use'
   })
   async register(@Body() registerDto: RegisterDto, @UploadedFile() image?: Express.Multer.File) {
-    return this.authService.register({...registerDto, file: image}, );
+    return this.authService.register({ ...registerDto, file: image },);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login existing user' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'User successfully logged in' 
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully logged in'
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'Invalid credentials' 
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials'
   })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
@@ -63,4 +63,39 @@ export class AuthenticationController {
       file,
     );
   }
+
+  @Put('add-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Add FCM device token for push notifications' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        token: {
+          type: 'string',
+          example: 'fcm_device_token_here',
+          description: 'Firebase Cloud Messaging device token'
+        }
+      },
+      required: ['token']
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token successfully added'
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid credentials'
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid token format'
+  })
+  async addToken(@Body('token') token: string) {
+    return this.authService.addNewToken(token);
+  }
+
+
+
 }

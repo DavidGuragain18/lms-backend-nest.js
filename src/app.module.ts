@@ -14,6 +14,8 @@ import { UploadModule } from './upload/upload.module';
 import { CourseReviewModule } from './course-review/course-review.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { GroupChatModule } from './group_chat/group_chat.module';
+import { NotificationModule } from './notification/notification.module';
+import { CourseTestModule } from './course_test/course_test.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { GroupChatModule } from './group_chat/group_chat.module';
    CourseReviewModule,
    EnrollmentModule,
    GroupChatModule,
+   NotificationModule,
+   CourseTestModule,
   ],
   controllers: [AppController, CourseController, CourseLessonController],
   providers: [AppService, CourseService, CourseLessonService],

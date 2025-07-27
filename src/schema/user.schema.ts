@@ -32,6 +32,9 @@ export class User {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'CourseEnrollment' }], default: [] })
   enrollments?: Types.ObjectId[];
+
+  @Prop({default: []})
+  notification_tokens: string[]
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

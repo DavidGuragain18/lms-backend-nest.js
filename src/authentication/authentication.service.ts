@@ -107,4 +107,22 @@ export class AuthenticationService {
     const userObject = user.toObject();
     return userObject;
   }
+
+  async addNewToken(token: string){
+
+    const userId = this.request.user.sub;
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // check of token alrady exists 
+    const tokenExists = user.notification_tokens.find((t) => t === token);
+    if (tokenExists) {
+      throw new ConflictException('Token already exists');
+    }
+    user.notification_tokens.push( token );
+    await user.save();
+    
+  }
 }

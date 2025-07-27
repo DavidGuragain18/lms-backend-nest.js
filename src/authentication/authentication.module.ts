@@ -26,7 +26,8 @@ export class AuthenticationModule implements NestModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: 'authentication/me', method: RequestMethod.PUT }
+        { path: 'authentication/me', method: RequestMethod.PUT },
+        {method: RequestMethod.PUT, path: 'authentication/add-token'},
       );
   }
 }
