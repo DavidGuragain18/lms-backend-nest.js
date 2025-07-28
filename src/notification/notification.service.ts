@@ -67,12 +67,8 @@ async createTestNotification({
         throw new NotFoundException('Course not found');
     }
 
-  
-
-    // 2. Get enrolled users - IMPORTANT: populate studentIds
-    const enrollments = await this.courseEnrollmentModel.find({ 
-        courseId: courseId // Ensure proper ObjectId conversion
-    }).populate('studentId'); // Populate the student references
+    const enrollments = await this.courseEnrollmentModel
+    .find({ courseId: courseId }).populate('studentId'); 
 
     if (!enrollments || enrollments.length === 0) {
         throw new BadRequestException('No recipients found for this course');
@@ -108,13 +104,10 @@ async createTestNotification({
     async getUserNotifications(): Promise<NotificationDocument[]> {
         const userId = this.request.user.sub; // Get authenticated user's ID
 
-        console.log('User ID:', userId);
-
-
         const notifications = await this.notificationModel
             .find({
                 $or: [
-                    { recipients: new Types.ObjectId(userId) }, // User is in recipients array
+                    { recipients: userId }, // User is in recipients array
                     { recipients: null }               // OR recipients is null (public)
                 ]
             })
