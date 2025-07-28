@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { request } from 'http';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from 'src/schema/course.schema';
-import { CourseEnrollmentDocument } from 'src/schema/course_enrollment.schema';
+import { CourseEnrollment, CourseEnrollmentDocument } from 'src/schema/course_enrollment.schema';
 import { Notification, NotificationDocument, NotificationStatus, NotificationType } from 'src/schema/notification.schema';
 import { User } from 'src/schema/user.schema';
 
@@ -17,7 +17,7 @@ export class NotificationService {
         private notificationModel: Model<NotificationDocument>,
         @InjectModel(Course.name)
         private courseModel: Model<CourseDocument>,
-        @InjectModel(Course.name)
+        @InjectModel(CourseEnrollment.name)
         private courseEnrollmentModel: Model<CourseEnrollmentDocument>,
         @Inject(REQUEST) private request: Request,
     ) { }
@@ -45,53 +45,57 @@ export class NotificationService {
     }
 
 async createTestNotification({
-  courseId,
-  title,
-  body,
-  image,
-  status,
-  type
-}: {
-  courseId: string,
-  title: string,
-  body: string,
-  image?: string,
-  status: NotificationStatus,
-  type: NotificationType
-}): Promise<NotificationDocument> {
-  // 1. Validate course exists
-  const courseExists = await this.courseModel.exists({ _id: courseId });
-  if (!courseExists) {
-    throw new NotFoundException('Course not found');
-  }
-
-  // 2. Get enrolled users (or use test recipients in development)
-  let recipients: Types.ObjectId[];
-  if (process.env.NODE_ENV === 'production') {
-    const enrollments = await this.courseEnrollmentModel.find({ course: courseId });
-    recipients = enrollments.map(e => e.studentId);
-  } else {
-    recipients = [new Types.ObjectId()]; // Test recipient
-  }
-
-  if (recipients.length === 0) {
-    throw new BadRequestException('No recipients found for this course');
-  }
-
-  const notification = await this.notificationModel.create({
-    recipients: recipients,
+    courseId,
     title,
     body,
-    type,
+    image,
     status,
-    isRead: false,
-    data: {courseId},
-    readAt: null // Explicitly set to null initially
-  })
+    type
+}: {
+    courseId: string,
+    title: string,
+    body: string,
+    image?: string,
+    status: NotificationStatus,
+    type: NotificationType
+}): Promise<NotificationDocument> {
+    // 1. Validate course exists
+    const courseExists = await this.courseModel.exists({ _id: courseId });
 
-  return notification;
+
+    if (!courseExists) {
+        throw new NotFoundException('Course not found');
+    }
+
+  
+
+    // 2. Get enrolled users - IMPORTANT: populate studentIds
+    const enrollments = await this.courseEnrollmentModel.find({ 
+        courseId: courseId // Ensure proper ObjectId conversion
+    }).populate('studentId'); // Populate the student references
+
+    if (!enrollments || enrollments.length === 0) {
+        throw new BadRequestException('No recipients found for this course');
+    }
+
+    // Extract student IDs - now properly typed as ObjectId[]
+    const recipients = enrollments.map(e => e.studentId as Types.ObjectId);
+
+    // 3. Create notification
+    const notification = await this.notificationModel.create({
+        recipients,
+        title,
+        body,
+        type,
+        status,
+        isRead: false,
+        data: { courseId },
+        readAt: null,
+        ...(image && { imageUrl: image }) // Conditionally add image if provided
+    });
+
+    return notification;
 }
-
 
     async getNotificationById(id: string): Promise<NotificationDocument> {
         const notification = await this.notificationModel.findById(id).exec();
@@ -101,28 +105,28 @@ async createTestNotification({
         return notification;
     }
 
-async getUserNotifications(): Promise<NotificationDocument[]> {
-    const userId = this.request.user.sub; // Get authenticated user's ID
+    async getUserNotifications(): Promise<NotificationDocument[]> {
+        const userId = this.request.user.sub; // Get authenticated user's ID
 
-    console.log('User ID:', userId);
-    
-    
-    const notifications = await this.notificationModel
-        .find({
-            $or: [
-                { recipients: new Types.ObjectId(userId) }, // User is in recipients array
-                { recipients: null }               // OR recipients is null (public)
-            ]
-        })
-        .sort({ createdAt: -1 }) // Newest first
-        .populate('recipients')  // Optional: populate recipient details
-        .exec();
+        console.log('User ID:', userId);
+
+
+        const notifications = await this.notificationModel
+            .find({
+                $or: [
+                    { recipients: new Types.ObjectId(userId) }, // User is in recipients array
+                    { recipients: null }               // OR recipients is null (public)
+                ]
+            })
+            .sort({ createdAt: -1 }) // Newest first
+            .populate('recipients')  // Optional: populate recipient details
+            .exec();
 
         console.log('Notifications found:', notifications);
-        
+
 
         return notifications;
-}
+    }
 
     async getUnreadNotificationsCount(
         userId: Types.ObjectId | string
