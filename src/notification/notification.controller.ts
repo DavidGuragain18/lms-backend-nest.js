@@ -6,7 +6,7 @@ import {
   Param,
   Post,
   Put,
-  Query,  UseGuards,
+  Query, UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -27,7 +27,7 @@ import { CreateTestNotificationDto } from './create_test_notification.dto';
 @ApiBearerAuth()
 @Controller('notifications')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new notification' })
@@ -45,13 +45,13 @@ export class NotificationController {
     );
   }
 
-    @Post("create-test-notification")
+  @Post("create-test-notification")
   @ApiOperation({ summary: 'Create a test notifcaiotn' })
   @ApiResponse({ status: 201, description: 'Notification created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createTestNotification(@Body() createNotificationDto: CreateTestNotificationDto) {
- return this.notificationService.createTestNotification({
+    return this.notificationService.createTestNotification({
       courseId: createNotificationDto.courseId,
       title: createNotificationDto.title,
       body: createNotificationDto.body,
@@ -76,7 +76,7 @@ export class NotificationController {
   async findAll(
 
   ) {
-    
+
     // In a real app, you'd get userId from the authenticated user
     return this.notificationService.getUserNotifications();
   }
@@ -110,21 +110,21 @@ export class NotificationController {
     return this.notificationService.markAllAsRead(userId);
   }
 
-  @Put(':id/status')
-  @ApiOperation({ summary: 'Update notification status' })
-  @ApiParam({ name: 'id', description: 'Notification ID' })
-  @ApiBody({ type: UpdateNotificationStatusDto })
-  @ApiResponse({ status: 200, description: 'Status updated' })
-  @ApiResponse({ status: 404, description: 'Notification not found' })
-  async updateStatus(
+@Put(':id/status')
+@ApiOperation({ summary: 'Update notification status for user' })
+@ApiParam({ name: 'id', description: 'Notification ID' })
+@ApiBody({ type: UpdateNotificationStatusDto })
+@ApiResponse({ status: 200, description: 'Status updated' })
+@ApiResponse({ status: 404, description: 'Notification not found' })
+async updateStatus(
     @Param('id') id: string,
     @Body() updateStatusDto: UpdateNotificationStatusDto,
-  ) {
+) {
     return this.notificationService.updateNotificationStatus(
-      id,
-      updateStatusDto.status,
+        id,
+        updateStatusDto.status
     );
-  }
+}
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete notification' })

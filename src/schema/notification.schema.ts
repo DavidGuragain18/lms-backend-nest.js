@@ -27,6 +27,22 @@ export class Notification {
   })
   recipients: Types.ObjectId[] | null;  // Correct type: array of ObjectIds or null
 
+  @Prop({
+    type: [{
+      userId: String,
+      status: {
+        type: String,
+        enum: NotificationStatus,
+        default: NotificationStatus.SENT
+      }
+    }],
+    default: []
+  })
+  notificationStatus: Array<{
+    userId: string;
+    status: NotificationStatus;
+  }>;
+
   @Prop({ type: String, required: true })
   title: string;
 
@@ -43,18 +59,6 @@ export class Notification {
   })
   type: NotificationType;
 
-  @Prop({
-    type: String,
-    enum: NotificationStatus,
-    default: NotificationStatus.SENT
-  })
-  status: NotificationStatus;
-
-  @Prop({ type: Boolean, default: false })
-  isRead: boolean;
-
-  @Prop({ type: Date })
-  readAt?: Date;
 
   @Prop({ type: String })
   imageUrl?: string;

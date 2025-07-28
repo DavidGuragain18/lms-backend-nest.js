@@ -44,54 +44,54 @@ export class NotificationService {
         return notification.save();
     }
 
-async createTestNotification({
-    courseId,
-    title,
-    body,
-    image,
-    status,
-    type
-}: {
-    courseId: string,
-    title: string,
-    body: string,
-    image?: string,
-    status: NotificationStatus,
-    type: NotificationType
-}): Promise<NotificationDocument> {
-    // 1. Validate course exists
-    const courseExists = await this.courseModel.exists({ _id: courseId });
-
-
-    if (!courseExists) {
-        throw new NotFoundException('Course not found');
-    }
-
-    const enrollments = await this.courseEnrollmentModel
-    .find({ courseId: courseId }).populate('studentId'); 
-
-    if (!enrollments || enrollments.length === 0) {
-        throw new BadRequestException('No recipients found for this course');
-    }
-
-    // Extract student IDs - now properly typed as ObjectId[]
-    const recipients = enrollments.map(e => e.studentId as Types.ObjectId);
-
-    // 3. Create notification
-    const notification = await this.notificationModel.create({
-        recipients,
+    async createTestNotification({
+        courseId,
         title,
         body,
-        type,
+        image,
         status,
-        isRead: false,
-        data: { courseId },
-        readAt: null,
-        ...(image && { imageUrl: image }) // Conditionally add image if provided
-    });
+        type
+    }: {
+        courseId: string,
+        title: string,
+        body: string,
+        image?: string,
+        status: NotificationStatus,
+        type: NotificationType
+    }): Promise<NotificationDocument> {
+        // 1. Validate course exists
+        const courseExists = await this.courseModel.exists({ _id: courseId });
 
-    return notification;
-}
+
+        if (!courseExists) {
+            throw new NotFoundException('Course not found');
+        }
+
+        const enrollments = await this.courseEnrollmentModel
+            .find({ courseId: courseId }).populate('studentId');
+
+        if (!enrollments || enrollments.length === 0) {
+            throw new BadRequestException('No recipients found for this course');
+        }
+
+        // Extract student IDs - now properly typed as ObjectId[]
+        const recipients = enrollments.map(e => e.studentId as Types.ObjectId);
+
+        // 3. Create notification
+        const notification = await this.notificationModel.create({
+            recipients,
+            title,
+            body,
+            type,
+            status,
+            isRead: false,
+            data: { courseId },
+            readAt: null,
+            ...(image && { imageUrl: image }) // Conditionally add image if provided
+        });
+
+        return notification;
+    }
 
     async getNotificationById(id: string): Promise<NotificationDocument> {
         const notification = await this.notificationModel.findById(id).exec();
@@ -108,7 +108,7 @@ async createTestNotification({
             .find({
                 $or: [
                     { recipients: userId }, // User is in recipients array
-                    { recipients: null }               // OR recipients is null (public)
+                    { recipients: null }     // OR recipients is null (public)
                 ]
             })
             .sort({ createdAt: -1 }) // Newest first
@@ -171,17 +171,32 @@ async createTestNotification({
         notificationId: string,
         status: NotificationStatus
     ): Promise<NotificationDocument> {
-        const updated = await this.notificationModel.findByIdAndUpdate(
-            notificationId,
-            { status },
-            { new: true }
-        ).exec();
-
-        if (!updated) {
+        // 1. Find the existing notification
+        const notification = await this.notificationModel.findById(notificationId);
+        if (!notification) {
             throw new NotFoundException('Notification not found');
         }
 
-        return updated;
+        // 2. Update or add the user's status
+        let statusUpdated = false;
+
+        // Check if user status already exists
+        const existingStatusIndex = notification.notificationStatus.findIndex(
+            s => s.userId === this.request.user.sub
+        );
+
+        if (existingStatusIndex >= 0) {
+            // Update existing status
+            notification.notificationStatus[existingStatusIndex].status = status;
+        } else {
+            // Add new status
+            notification.notificationStatus.push({ userId: this.request.user.sub, status });
+        }
+
+        // 3. Save the updated notification
+        const updatedNotification = await notification.save();
+
+        return updatedNotification;
     }
 
     async deleteNotification(notificationId: string): Promise<boolean> {
