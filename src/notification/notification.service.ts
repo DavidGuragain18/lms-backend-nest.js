@@ -101,16 +101,28 @@ async createTestNotification({
         return notification;
     }
 
-    async getUserNotifications(
-  
-    ): Promise<NotificationDocument[]> {
-        console.log(this.request.user);
+async getUserNotifications(): Promise<NotificationDocument[]> {
+    const userId = this.request.user.sub; // Get authenticated user's ID
+
+    console.log('User ID:', userId);
+    
+    
+    const notifications = await this.notificationModel
+        .find({
+            $or: [
+                { recipients: new Types.ObjectId(userId) }, // User is in recipients array
+                { recipients: null }               // OR recipients is null (public)
+            ]
+        })
+        .sort({ createdAt: -1 }) // Newest first
+        .populate('recipients')  // Optional: populate recipient details
+        .exec();
+
+        console.log('Notifications found:', notifications);
         
-        return this.notificationModel
-            .find({ recipient: this.request.user.sub })
-            .sort({ createdAt: -1 })
-            .exec();
-    }
+
+        return notifications;
+}
 
     async getUnreadNotificationsCount(
         userId: Types.ObjectId | string

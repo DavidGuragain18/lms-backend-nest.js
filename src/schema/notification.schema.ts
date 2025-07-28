@@ -20,13 +20,12 @@ export enum NotificationStatus {
 @Schema({ timestamps: true })
 export class Notification {
   @Prop({
-    type: [{
-      type: Types.ObjectId,
-      ref: 'User'
-    }],
-    required: true
+    type: [Types.ObjectId],  // Correct type definition for array of ObjectIds
+    ref: 'User',            // Reference to User model
+    default: null,           // Default value
+    required: false
   })
-  recipients: User[];  // Changed from recipient (singular) to recipients (plural)
+  recipients: Types.ObjectId[] | null;  // Correct type: array of ObjectIds or null
 
   @Prop({ type: String, required: true })
   title: string;
