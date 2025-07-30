@@ -21,7 +21,7 @@ import { join } from 'path';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/'),
+    MongooseModule.forRoot('mongodb://localhost:27017/adhyan'),
     AuthenticationModule,
     CourseModule,
     CourseLessonModule,
